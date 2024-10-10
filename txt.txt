@@ -1,0 +1,185 @@
+v class="flex justify-between">
+            <div>
+                <Space>
+                <div class='font-bold'>Invoice</div>
+                <Input.Search placeholder='Search' onSearch={OnTextSearch} />
+                {/* onSearch={OnTextSearch} */}
+                <Select placeholder='Status' allowClear onChange={OnChangeStatus} style={{width:120}}>
+                {/* onChange={OnChangeStatus}  */}
+                    <Select.Option value={"1"}>
+                        Diposit
+                    </Select.Option>
+                    <Select.Option value={"0"}>
+                        Paid
+                    </Select.Option>
+                    <Select.Option value={"2"}>
+                        Unpaid
+                    </Select.Option>
+                </Select>
+                <DatePicker placeholder='Select Date'/>
+                    
+                 
+                </Space>
+                    
+            
+            </div>
+            <div>
+            <Button onClick={()=>{setOpen(true)}} type='primary'>Add</Button>
+            </div>
+            
+            </div>
+
+
+
+
+            =================== Modal =============================
+
+
+            <Modal
+                title={formCat.getFieldValue("Id") == null ? "New Invoice" : "Update Invoice"}
+                open={open}
+                onCancel={onCloseModal}
+                okText="Save"
+                footer={null}
+
+    
+                >
+                    <Form 
+                        // labelCol={{
+                        //     span:8
+                        // }}
+                        // wrapperCol={{
+                        //     span:16
+                        // }}
+                        onFinish={onFinish}
+                        layout="vertical"
+                        form={formCat}
+
+                    
+                    >
+                       <Row gutter={5}>
+                        <Col span={12}>
+                        <Form.Item
+                            label="Name"
+                            name={"Name"}
+                            rules={[
+                            {
+                            required: true,
+                            message: 'Please input Name!',
+                            },
+                        ]}
+                        >
+                            
+                            <Input placeholder='Invoice Name'/>
+                            
+                        </Form.Item>
+                        </Col>
+
+                        <Col span={12}>
+                        <Form.Item
+                            label="Qty"
+                            name={"Qty"}
+                            // rules={[
+                            //     {
+                            //     required: true,
+                            //     message: 'Please input Qty!',
+                            //     },
+                            // ]}
+                        >
+                            {/* <Input placeholder='Qty'/> */}
+                            {/* {invoice.map((item,index)=>(
+                                <>{item.QtyId}</>
+                            ))} */}
+                        </Form.Item>
+                        </Col>
+                       </Row>
+                       <Row gutter={5}>
+                        <Col span={12}>
+                        <Form.Item
+                            label="Price" 
+                            name={"Price"}
+                            rules={[
+                            {
+                            required: true,
+                            message: 'Please input Name!',
+                            },
+                        ]}
+                        >
+                            
+                            <Input placeholder='Invoice Price'/>
+                            
+                        </Form.Item>
+                        </Col>
+
+                        {/* <Col span={12}>
+                        <Form.Item
+                            label="Discount"
+                            name={"Discount"}
+                            rules={[
+                                {
+                                required: true,
+                                message: 'Please input Discount!',
+                                },
+                            ]}
+                        >
+                            <Input placeholder='Discount'/>
+                        </Form.Item>
+                        </Col> */}
+                       </Row>
+                        <Row gutter={5}>
+
+                        <Col span={12}>
+                        <Form.Item
+                            label="Amount"
+                            name={"Amount"}
+                            rules={[
+                                {
+                                required: true,
+                                message: 'Please input Amount!',
+                                },
+                            ]}
+                        >
+                            <Input placeholder='Amount'/>
+                        </Form.Item>
+                        </Col>
+
+
+                            {/* <Col span={12}>
+                            <Form.Item
+                            label="Status"
+                            name={"Status"}
+                            rules={[
+                                {
+                                required: true,
+                                message: 'Please choose Status!',
+                                },
+                            ]}
+                            
+                        >
+                            <Select defaultValue={"1"}>
+                                <Select.Option value="1">
+                                    Diposit
+                                </Select.Option>
+                                <Select.Option value="0">
+                                    Paid
+                                </Select.Option>
+                                <Select.Option value="2">
+                                    Unpaid
+                                </Select.Option>
+                            </Select>
+                        </Form.Item>
+                            </Col> */}
+                        </Row>
+                        
+
+                        
+
+                        <Form.Item style={{textAlign:"right"}}>
+                            <Space >
+                                <Button onClick={onCloseModal} danger>Cancel</Button>
+                                <button  class='bg-blue-500  hover:bg-blue-400 text-white py-1 px-5  rounded-md transition' htmlType='submit'>{formCat.getFieldValue("Id") == null ? "Save" : "Update"}</button>
+                            </Space>
+                        </Form.Item>
+                    </Form>
+
+                </Modal>

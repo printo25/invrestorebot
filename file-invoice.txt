@@ -1,0 +1,493 @@
+import {useEffect, useRef, useState} from 'react'
+import {Table,Button, Space, Modal, Form, Select,Input, message, Tag,  DatePicker, Row, Col, InputNumber} from 'antd'
+import { request } from '../Config/request';
+import {
+    DeleteOutlined,
+    DesktopOutlined,
+    DiffOutlined,
+    EditOutlined,
+    FileOutlined,
+    LoadingOutlined,
+    PieChartOutlined,
+    PlusCircleOutlined,
+    PrinterOutlined,
+    SendOutlined,
+    TeamOutlined,
+    UserOutlined,
+  } from '@ant-design/icons';
+// import './PageScreen.css'
+import { formatDateClient } from '../Config/support';
+// import MainPage from '../MainContainScreen/MainPage';
+
+
+const InvoiceScreen = () =>{
+  
+     const [list, setList] = useState([]);
+     const [open,setOpen] = useState(false);
+    //  const [comfirm,setComfirm] = useState(false)
+     const [formCat] = Form.useForm();
+     const [loading,setLoading] = useState(false);
+
+
+     useEffect(()=>{
+        formCat.setFieldsValue({
+            Status:"1"
+        })
+        getlist()
+       
+     },[])
+
+     const filterRef = useRef({
+        txt_search:null,
+        status:null
+     })
+     const getlist = async ()=>{
+        setLoading(true)
+        var param = {
+            txt_search: filterRef.current.txt_search,
+            status: filterRef.current.status
+           
+        }
+        const res = await request("invoice/getlist", "get",param)
+        
+        setLoading(false)
+        console.log(res);
+        if(res){
+            
+            setList(res.list)
+        }
+    
+     }
+     const onCloseModal = () =>{
+        formCat.resetFields();
+        formCat.setFieldsValue({
+            Status:"1"
+        })
+        setOpen(false);
+     }
+
+
+    const handleclickEdit = (item) =>{
+        // console.log(item);
+       
+        formCat.setFieldsValue({
+            Id: item.Id, 
+            Name: item.Name,
+            Qty: item.Qty,
+            Price: item.Price,
+            Amount: item.Amount,
+          
+        })
+        setOpen(true)
+          
+    }
+
+
+     const handleclickDelete = async (item) =>{
+        Modal.confirm({
+            title: "Delete",
+            content: "Are you sure you want to delete ?",
+            okText: "Yes",
+            cancelText: "No",
+            okType: "danger",
+            centered: true,
+            onOk: async () => {
+                var data = {
+                    Id:item.Id
+                }
+                
+                const res = await request("invoice/remove","delete",data);
+                
+                if(res){
+                    message.success(res.message);
+                    getlist();
+                    
+                }
+            }
+        })
+       
+     
+     }
+
+     const OnTextSearch = (value) =>{
+        filterRef.current.txt_search = value
+        getlist();
+     }
+     const OnChangeStatus = (value) =>{
+        filterRef.current.status = value
+        getlist();
+     }
+
+
+     const sump = (item) =>{
+        var data = {
+            Qty: item.Qty,
+            Amount: item.Amount
+        }
+     }
+
+     const onFinish = async (item) =>{
+             // formCat.resetFields()
+        var Id = formCat.getFieldValue("Id")
+       
+            var data = {
+                Id:Id,
+                Name: item.Name,
+                Qty: item.Qty,
+                Price: item.Price,
+                Amount: item.Amount,          
+                
+       
+            }
+            var data2 = {
+                // Id:Id,
+                Name_Customer: item.Name_Customer,
+                OrderStatus: item.OrderStatus,
+                Discount: item.Discount,
+                Diposit_Price: item.Diposit_Price,
+                // "invoice": list
+                
+       
+            }
+            var method = (Id == null ? "post" : "put")
+            var Url = (Id == null ? "invoice/create" : "invoice/update")
+            const res = await request(Url,method,data);
+            if(res){
+                message.success(res.message)
+                getlist();
+                onCloseModal()
+                // formCat.resetFields()
+               
+
+            }
+            const res2 = await request("invoice_detail/generate","post",data2);
+           
+
+            console.log(res2);
+            if(res2.message){
+                message.success(res2.message);
+                // getlist();
+                // setList([]) 
+                formCat.resetFields()
+                // message.success(res.message)
+                // getlist();
+                // onCloseModal()
+            }
+            // var method2 = (Id == null ? "post" : "put")
+            // var Url2 = (Id == null ? "invoice_detail/generate" : "invoice_detail/update")
+            // const res2 = await request(Url2,method2,data2);
+            // if(res2){
+            //     message.success(res2.message)
+            //     getlist();
+            //     onCloseModal()
+            //     // setList([]);
+            //     // formCat.resetFields();
+               
+            // }
+
+         }
+
+        // const setfiel = () =>{
+        //     formCat.resetFields()
+        // }
+
+
+
+     
+
+    return(
+        // <MainPage loading={loading} >
+        <div className='Category-Page'>
+            <div class="flex justify-between">
+            <div>
+                <Form onFinish={onFinish} form={formCat}>
+                <Space>
+                <Form.Item><div class='font-bold'>Create Invoice</div></Form.Item>
+                <Form.Item
+                            // label="Name_Customer"
+                            name={"Name_Customer"}
+                        //     rules={[
+                        //     {
+                        //     required: true,
+                        //     message: '',
+                        //     },
+                        // ]}
+                        >
+                            
+                            <Input placeholder='Name Customer'/>
+                            
+                        </Form.Item>
+                
+                {/* <Input.Search placeholder='Search' onSearch={OnTextSearch} /> */}
+                {/* onSearch={OnTextSearch} */}
+                <Form.Item
+                            // label="OrderStatus"
+                            name={"OrderStatus"}
+                            // rules={[
+                            //     {
+                            //     required: true,
+                            //     message: '',
+                            //     },
+                            // ]}
+                            
+                        >
+                            <Select placeholder="Status" allowClear style={{width:90}}>
+                                <Select.Option value="1">
+                                    Diposit
+                                </Select.Option>
+                                <Select.Option value="0">
+                                    Paid
+                                </Select.Option>
+                            </Select>
+                        </Form.Item>
+
+                {/* <Select placeholder='Status' allowClear  style={{width:120}}>
+                onChange={OnChangeStatus} 
+                    <Select.Option value={"1"}>
+                        Diposit
+                    </Select.Option>
+                    <Select.Option value={"0"}>
+                        Paid
+                    </Select.Option>
+                </Select> */}
+                {/* <DatePicker placeholder='Select Date'/> */}
+                {/* <InputNumber placeholder='Discount' style={{width:170}}/> */}
+                <Form.Item
+                            // label="Discount"
+                            name={"Discount"}
+                            rules={[
+                            // {
+                            // required: true,
+                            // message: 'Please input Name!',
+                            // },
+                        ]}
+                        >
+                            
+                            <Input placeholder='Discount' style={{width:90}} />
+                            
+                        </Form.Item>
+                        <Form.Item
+                            // label="Name_Customer"
+                            name={"Diposit_Price"}
+                            rules={[
+                            // {
+                            // required: true,
+                            // message: 'Please input Name!',
+                            // },
+                        ]}
+                        >
+                            
+                            <InputNumber placeholder='Diposit Price'/>
+                            
+                        </Form.Item>
+                        <Form.Item>
+                        <Button  type='primary' htmlType='submit' >Generate Invoice<SendOutlined /></Button> 
+                        {/* {formCat.getFieldValue("Id") == null ? "Generate Invoice" : "Update"} */}
+                        </Form.Item>
+                
+                </Space>
+                </Form>
+                
+                    
+            
+            </div>
+            <div>
+            <Button onClick={()=>{setOpen(true)}} type='primary'><PlusCircleOutlined /> Add New</Button>
+            </div>
+            
+            </div>
+
+            
+             <div style={{padding:30}} >
+           
+             <Table 
+             dataSource={list}
+             
+             
+             columns={[
+                {
+                    key:"No",
+                    title:"No",
+                    // dataIndex:"Name", 
+                    // render:(value,item,index) => value +"-AAA"
+                    render:(value,item,index) =>  (index+1)
+                    
+                },
+                {
+                    key:"Name",
+                    title:"Name",
+                    dataIndex:"Name"
+                    
+                },
+                {
+                    key:"qty",
+                    title:"Qty",
+                    dataIndex:"Qty"
+                    
+                },
+                {
+                    key:"price",
+                    title:"Price",
+                    dataIndex:"Price",
+                     render:(value,item,index) => value +"$"
+                    
+                },
+              
+                {
+                    key:"amount",
+                    title:"Amount",
+                    dataIndex:"Amount",
+                    render:(value,item,index) => {
+                        
+                        var Qty = item.Qty;
+                        var Price = item.Price;
+                        // var Dis = (item.Discount == null ? 0 : item.Discount);
+                        // var DiscountPrice = (QtyOrder * Price) * Dis/100;
+                        var Total = (Qty * Price);
+                        return Total +".00$";
+
+                    }
+                    
+                },
+                // {
+                //     key:"status",
+                //     title:"Status",
+                //     dataIndex:"Status",
+                //     render:(value,item,index) =>(value == 1 ? <Tag color='red'>Diposit</Tag>: <Tag color='green'>Paid</Tag>     )
+                    
+                // },
+                {
+                    key:"creatAt",
+                    title:"CreateAt",
+                    dataIndex:"CreateAt",
+                    render:(value,item,index) => formatDateClient(value)
+                    
+                },
+              
+                {
+                    key:"action",
+                    title:"Action",
+                    dataIndex:"Status",
+                    render:(value,item,index) => (
+                        
+                    <Space>
+                        <button onClick={()=>handleclickEdit(item)}    class='bg-blue-600  hover:bg-blue-400 text-white py-1 px-5  rounded-md '><EditOutlined /></button>
+                        <Button onClick={()=>handleclickDelete(item)} type='primary' danger  ><DeleteOutlined /></Button>
+                        
+                    </Space>
+                    )
+                    
+                },
+                
+                
+             ]}
+             
+             />
+             
+             </div>
+            
+           
+
+             <div>
+                <Modal
+                title={formCat.getFieldValue("Id") == null ? "New Invoice" : "Update Invoice"}
+                open={open}
+                onCancel={onCloseModal}
+                okText="Save"
+                footer={null}
+
+    
+                >
+                    <Form 
+                        // labelCol={{
+                        //     span:8
+                        // }}
+                        // wrapperCol={{
+                        //     span:16
+                        // }}
+                        onFinish={onFinish}
+                        layout="vertical"
+                        form={formCat}
+
+                    
+                    >
+                       <Row gutter={5}>
+                        <Col span={12}>
+                        <Form.Item
+                            label="Name"
+                            name={"Name"}
+                            rules={[
+                            {
+                            required: true,
+                            message: 'Please input Name!',
+                            },
+                        ]}
+                        >
+                            
+                            <Input placeholder='Invoice Name'/>
+                            
+                        </Form.Item>
+                        </Col>
+
+                        <Col span={12}>
+                        <Form.Item
+                            label="Qty"
+                            name={"Qty"}
+                            rules={[
+                                {
+                                required: true,
+                                message: 'Please input Qty!',
+                                },
+                            ]}
+                        >
+                            <Input placeholder='Qty'/>
+                        </Form.Item>
+                        </Col>
+                       </Row>
+                       <Row gutter={5}>
+                        <Col span={12}>
+                        <Form.Item
+                            label="Price"
+                            name={"Price"}
+                            rules={[
+                            {
+                            required: true,
+                            message: 'Please input Name!',
+                            },
+                        ]}
+                        >
+                            
+                            <Input placeholder='Invoice Price'/>
+                            
+                        </Form.Item>
+                        </Col>
+                       </Row>
+                       
+                        
+
+                        
+
+                        <Form.Item style={{textAlign:"right"}}>
+                            <Space >
+                                <Button onClick={onCloseModal} danger>Cancel</Button>
+                                {/* <button  class='bg-blue-500  hover:bg-blue-400 text-white py-1 px-5  rounded-md transition' >Save</button> */}
+                                <button  class='bg-blue-500  hover:bg-blue-400 text-white py-1 px-5  rounded-md transition' htmlType='submit'>{formCat.getFieldValue("Id") == null ? "Save" : "Update"}</button>
+                            </Space>
+                        </Form.Item>
+                    </Form>
+
+                </Modal>
+
+               
+               
+             </div>
+
+
+           
+           
+        </div>     
+        // </MainPage>        
+
+    )
+}
+export default InvoiceScreen;
